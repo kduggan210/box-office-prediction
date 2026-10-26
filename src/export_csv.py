@@ -1,0 +1,28 @@
+"""
+Export the joined Box Office Mojo tables to a small CSV that can be committed
+to git (data/processed/bom_movies.csv). The raw cache and movies.db stay local.
+
+Usage (from repo root):
+    python src/export_csv.py
+"""
+import pandas as pd
+from sqlalchemy import create_engine
+
+e = create_engine("sqlite:///data/processed/movies.db")
+
+df = pd.read_sql("""
+    SELECT w.title, w.release_path, w.first_weekend,
+           w.max_theaters AS weekend_max_theaters, w.total_gross_seen,
+           r.mpaa, r.runtime_min, r.genres, r.distributor,
+           r.release_date_raw, r.release_date, r.close_date,
+           r.imdb_id, r.domestic_gross, r.budget,
+           r.opening_gross, r.opening_theaters, r.widest_release_theaters
+    FROM bom_wide w
+    LEFT JOIN bom_release_details r USING (release_path)
+""", e)
+
+df.to_csv("data/processed/bom_movies.csv", index=False)
+print(f"wrote data/processed/bom_movies.csv: {len(df)} rows")
+print("rows with details:", int(df["imdb_id"].notna().sum()))
+print("rows without details (run bom_releases.py again if this is large):",
+      int(df["imdb_id"].isna().sum()))
