@@ -1,0 +1,13 @@
+# Data collection
+pandas
+requests
+beautifulsoup4
+lxml
+sqlalchemy
+
+# Modeling / analysis (uncomment when you get there)
+# scikit-learn
+# xgboost
+# matplotlib
+# seaborn
+# jupyter
