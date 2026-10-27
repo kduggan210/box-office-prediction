@@ -17,11 +17,13 @@ Built to run unattended:
 Usage (from repo root):
     python src/bom_releases.py --limit 20     # test batch first
     python src/bom_releases.py                # everything not yet parsed
+
 """
 import re
 import json
 import time
 import argparse
+from collections import Counter
 
 import pandas as pd
 import requests
@@ -61,6 +63,37 @@ def fetch_release(path, retries=3):
             if attempt == retries - 1:
                 raise
             time.sleep(30 * (attempt + 1))
+
+
+def find_imdb_id(html):
+    """The film's own IMDb ID.
+
+    The first 'tt' number in the HTML is NOT reliable: synopses link to related
+    films (a sequel's page links to its predecessor). The film's own ID is the one
+    the pro.imdb.com links (/cast, /filmmakers, /boxoffice, ...) point to.
+    """
+    ids = Counter(re.findall(r"pro\.imdb\.com/title/(tt\d{6,9})", html))
+    if ids:
+        return ids.most_common(1)[0][0]
+    m = re.search(r"/title/(tt\d{6,9})/\?ref_=bo_rl_ti", html)  # the page's own title link
+    if m:
+        return m.group(1)
+    m = re.search(r'<option value="/title/(tt\d{6,9})/"\s+selected', html)
+    return m.group(1) if m else None
+
+
+def clean_genres(s):
+    """'Horror\\r\\n  \u00b7\\r\\n  Mystery' -> 'Horror|Mystery'"""
+    if not s:
+        return None
+    parts = [g.strip() for g in re.split("\u00b7", s) if g.strip()]
+    return "|".join(parts) or None
+
+
+def clean_distributor(s):
+    if not s:
+        return None
+    return s.replace("See full company information", "").strip() or None
 
 
 def first_money(s):
@@ -113,8 +146,9 @@ def parse_release(html):
                 pairs[label] = value
     info = {col: pairs.get(label) for label, col in LABELS.items()}
 
-    m = re.search(r"tt\d{6,9}", html)
-    info["imdb_id"] = m.group(0) if m else None
+    info["imdb_id"] = find_imdb_id(html)
+    info["genres"] = clean_genres(info.get("genres"))
+    info["distributor"] = clean_distributor(info.get("distributor"))
 
     # The domestic label carries the share inside it, e.g. "domestic ( 57.6% )"
     dom = next((v for k, v in pairs.items() if k.startswith("domestic")), None)
