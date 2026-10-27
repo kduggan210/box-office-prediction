@@ -34,3 +34,11 @@ for table in ("tmdb_movies", "tmdb_people", "bom_tmdb_match"):
         out = pd.read_sql(f"SELECT * FROM {table}", e)
         out.to_csv(f"data/processed/{table}.csv", index=False)
         print(f"wrote data/processed/{table}.csv: {len(out)} rows")
+
+# First weekend each film played in 600+ theaters (its wide-release weekend)
+if "bom_weekends" in existing:
+    wk = pd.read_sql("SELECT release_path, weekend_id, max_theaters FROM bom_weekends", e)
+    wide_wk = (wk[wk["max_theaters"] >= 600].groupby("release_path")["weekend_id"].min()
+               .rename("wide_weekend_id").reset_index())
+    wide_wk.to_csv("data/processed/bom_wide_weekend.csv", index=False)
+    print(f"wrote data/processed/bom_wide_weekend.csv: {len(wide_wk)} rows")
