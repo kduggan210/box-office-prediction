@@ -6,7 +6,7 @@ Usage (from repo root):
     python src/export_csv.py
 """
 import pandas as pd
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, inspect
 
 e = create_engine("sqlite:///data/processed/movies.db")
 
@@ -26,3 +26,11 @@ print(f"wrote data/processed/bom_movies.csv: {len(df)} rows")
 print("rows with details:", int(df["imdb_id"].notna().sum()))
 print("rows without details (run bom_releases.py again if this is large):",
       int(df["imdb_id"].isna().sum()))
+
+# TMDB tables (present after src/tmdb_import.py has run)
+existing = inspect(e).get_table_names()
+for table in ("tmdb_movies", "tmdb_people", "bom_tmdb_match"):
+    if table in existing:
+        out = pd.read_sql(f"SELECT * FROM {table}", e)
+        out.to_csv(f"data/processed/{table}.csv", index=False)
+        print(f"wrote data/processed/{table}.csv: {len(out)} rows")
