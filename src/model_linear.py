@@ -1,49 +1,62 @@
+import numpy as np
 import pandas as pd
-from sklearn.dummy import DummyRegressor
-from sklearn.impute import SimpleImputer
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
-from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import r2_score
 
-from model_common import (load, load_groups, datasets, splits, evaluate, explain, save_tables,
-                          plot_pred_vs_actual, plot_ablation, finish, TARGET, TITLES)
+# Step 1: the data, split by time
+films = pd.read_csv("data/processed/features.csv")
+films = films[films["has_budget"] == 1]              # keep films with a recorded budget
 
-f, feats = load()
-groups = load_groups()
-rows, abl_list, imp_list, preds = [], [], [], {}
+train = films[films["release_year"] <= 2019]         # learn from the past (2000-2019)
+test = films[films["release_year"] >= 2022]          # then predict newer films (2022-2025)
+print(f"{len(train)} training films, {len(test)} test films")
 
+# The thing we predict: ln(gross). Working in logs means a model's error is a percentage miss, not a dollar miss, which suits numbers that range from $0.1M to $1B.
+y_train, y_test = train["log_gross_adj"], test["log_gross_adj"]
 
-def linear():
-    return make_pipeline(SimpleImputer(strategy="median"), StandardScaler(), LinearRegression())
+# Step 2: ONE feature (log budget) -> the best straight line
+line = LinearRegression().fit(train[["log_budget_adj"]], y_train)
+slope, intercept = line.coef_[0], line.intercept_
+print("\n--- Step 2: one feature ---")
+print(f"ln(gross) = {intercept:.2f} + {slope:.2f} * ln(budget)")
+print(f"A 10% bigger budget goes with a {(1.1 ** slope - 1) * 100:.1f}% bigger gross "
+      f"(doubling the budget multiplies gross by {2 ** slope:.2f}).")
+pred = line.predict(test[["log_budget_adj"]])
+print(f"R2 on the test films: {r2_score(y_test, pred):.3f}   (1 = perfect, 0 = no better than the average)")
 
+# a few predictions in plain dollars
+sample = test.sample(5, random_state=1)
+shown = pd.DataFrame({"film": sample["title"],
+                      "predicted $M": np.exp(line.predict(sample[["log_budget_adj"]])) / 1e6,
+                      "actual $M": np.exp(sample["log_gross_adj"]) / 1e6}).round(1)
+print("\nfive test films:")
+print(shown.to_string(index=False))
 
-for name, df in datasets(f).items():
-    s, X, y = splits(df), df[feats], df[TARGET]
-    train, test = s["train"], s["test"]                  # 2000-2019 / 2022-2025
+# visualization: every film is a dot, the model is the line
+ticks = np.log([1e6, 1e7, 1e8, 1e9])
+labels = ["$1M", "$10M", "$100M", "$1B"]
+fig, ax = plt.subplots(figsize=(7, 5))
+ax.scatter(train["log_budget_adj"], y_train, s=8, alpha=0.3, label="training films (2000-2019)", color="#3b6ea5")
+ax.scatter(test["log_budget_adj"], y_test, s=8, alpha=0.5, label="test films (2022-2025)", color="#e08a1e")
+xs = np.linspace(train["log_budget_adj"].min(), train["log_budget_adj"].max(), 50)
+ax.plot(xs, intercept + slope * xs, color="k", lw=2, label="the fitted line")
+ax.set_xticks(ticks); ax.set_xticklabels(labels); ax.set_yticks(ticks); ax.set_yticklabels(labels)
+ax.set(xlabel="Budget (2025 dollars)", ylabel="Domestic gross (2025 dollars)",
+       title="Linear regression with one feature")
+ax.legend(frameon=False)
+fig.tight_layout()
+fig.savefig("reports/figures/simple_linear_fit.png", dpi=150)
+print("\nsaved reports/figures/simple_linear_fit.png")
 
-    evaluate(rows, name, "Mean baseline", DummyRegressor().fit(X[train], y[train]), X, y, s)
-
-    # 1) one feature: log budget (and whether a budget is recorded)
-    budget_cols = ["log_budget_adj", "has_budget"]
-    one = linear().fit(X.loc[train, budget_cols], y[train])
-    evaluate(rows, name, "Linear: log budget only", one, X, y, s, cols=budget_cols)
-
-    # 2) all features
-    full = linear().fit(X[train], y[train])
-    test_pred, _ = evaluate(rows, name, "Linear: all features", full, X, y, s)
-    preds[name] = (y[test], test_pred)
-
-    coefs = pd.Series(full[-1].coef_, index=feats)
-    print(f"\n{TITLES[name]}: largest coefficients (per 1 standard deviation of the feature)")
-    print(coefs.reindex(coefs.abs().sort_values(ascending=False).index).head(10).round(3).to_string())
-
-    def fit_predict(cols):                               # refit with only these columns
-        return linear().fit(X.loc[train, cols], y[train]).predict(X.loc[test, cols])
-
-    a, i = explain(name, fit_predict, full, X, y, s, feats, groups)
-    abl_list.append(a); imp_list.append(i)
-
-save_tables("linear", abl_list, imp_list)
-plot_pred_vs_actual("linear", "Linear regression (all features)", preds)
-plot_ablation("linear", "Linear regression", pd.concat(abl_list))
-finish("linear", rows)
+# Step 3: SEVERAL features -> the same idea with more inputs
+cols = ["log_budget_adj", "is_sequel", "is_big_six", "runtime_min"]
+several = LinearRegression().fit(train[cols], y_train)
+print("\n--- Step 3: four features ---")
+print("Each feature gets its own coefficient; the prediction is the intercept plus")
+print("coefficient x feature value, added up.")
+for name, c in zip(cols, several.coef_):
+    print(f"  {name:<15} coefficient {c:+.3f}")
+print(f"R2 on the test films: {r2_score(y_test, several.predict(test[cols])):.3f}")
