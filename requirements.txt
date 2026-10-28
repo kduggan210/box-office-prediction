@@ -9,5 +9,5 @@ sqlalchemy
 scikit-learn
 xgboost
 matplotlib
-seaborn
-jupyter
+# seaborn
+# jupyter
