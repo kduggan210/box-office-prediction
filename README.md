@@ -62,8 +62,6 @@ python src/build_dataset.py           # cleaned modeling table -> movies_clean.c
 python src/adjust_cpi.py              # constant-dollar columns -> movies_adjusted.csv
 python src/tmdb_collections.py        # release dates of every film in each franchise
 python src/build_features.py          # features.csv, feature_groups.csv
-python src/eda.py                     # figures 01-10 and eda_summary.txt
-python src/make_diagram.py            # pipeline diagram for the report
 ```
 
 Then the models (each one is a standalone script):
