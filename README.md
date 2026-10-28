@@ -16,7 +16,7 @@ Forest, and XGBoost, and study which feature groups matter most.
 | TMDB join (budget, cast, crew, studio, franchise) | `src/tmdb_import.py` | done |
 | Export joined data to CSV | `src/export_csv.py` | done |
 | Cleaning (re-releases, wide-release date, genres) | `src/build_dataset.py` | done |
-| CPI inflation adjustment | TODO | TODO |
+| CPI inflation adjustment | `src/adjust_cpi.py` | done |
 | Feature engineering | TODO | TODO |
 | Modeling and evaluation | TODO | TODO |
 
@@ -51,6 +51,8 @@ python src/bom_releases.py            # per-film details for every wide release
 python src/tmdb_import.py             # budget, franchise, studios, cast and crew from TMDB
 python src/export_csv.py              # small CSVs of the joined data for git
 python src/build_dataset.py           # cleaned modeling table -> movies_clean.csv
+python src/adjust_cpi.py              # constant-dollar columns -> movies_adjusted.csv
+python src/tmdb_collections.py        # release dates of every film in each franchise
 ```
 
 Notes:
@@ -159,7 +161,7 @@ Warner Bros. and Disney releases, and how to treat 2020-2021 (only 58 films in
 
 - Box Office Mojo (boxofficemojo.com) — domestic gross, theaters, MPAA rating
 - TMDB (themoviedb.org) — metadata, cast, crew
-- BLS Consumer Price Index (bls.gov/cpi)
+- FRED CPIAUCNS (fred.stlouisfed.org/series/cpiaucns) — Consumer Price Index for All Urban Consumers, all items, not seasonally adjusted
 
 Scraping is rate-limited and cached. Review each site's terms of use before
 reusing this code.
