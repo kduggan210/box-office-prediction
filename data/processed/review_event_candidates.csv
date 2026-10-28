@@ -1,0 +1,55 @@
+title,distributor,tmdb_genres,runtime_min,domestic_gross,wide_date,why,release_path
+Taylor Swift: The Eras Tour,AMC Theatres,Music,169.0,180756269,2023-10-13,live_or_concert_title,/release/rl4054352641/
+Live Free or Die Hard,20th Century Fox,Action|Thriller,128.0,134529403,2007-06-29,live_or_concert_title,/release/rl3025110529/
+Justin Bieber: Never Say Never,Paramount Pictures,Music|Documentary|Family,105.0,73013910,2011-02-11,music_documentary,/release/rl927434241/
+This Is It,Sony Pictures Releasing,Music|Documentary,111.0,72091016,2009-10-30,music_documentary,/release/rl1130530305/
+Hannah Montana and Miley Cyrus: Best of Both Worlds Concert,Walt Disney Studios Motion Pictures,Documentary|Music,74.0,65281781,2008-02-01,music_documentary;live_or_concert_title,/release/rl508986881/
+Renaissance: A Film by Beyoncé,AMC Theatres,Music|Documentary,169.0,33889684,2023-12-01,music_documentary,/release/rl347177729/
+One Direction: This Is Us,TriStar Pictures,Documentary|Music,92.0,28873374,2013-08-30,music_documentary,/release/rl2976286209/
+Winnie the Pooh,Walt Disney Studios Motion Pictures,Animation|Family|Adventure|Comedy,63.0,26692846,2011-07-15,runtime_outlier,/release/rl2373682689/
+Katy Perry: Part of Me,Paramount Pictures,Documentary|Music,93.0,25326071,2012-07-06,music_documentary,/release/rl3277686273/
+We Live in Time,A24,Romance|Drama,108.0,24692924,2024-10-18,live_or_concert_title,/release/rl2825682945/
+Martin Lawrence Live: Runteldat,Paramount Pictures,Comedy|Documentary,113.0,19184820,2002-08-02,live_or_concert_title,/release/rl745506305/
+Jonas Brothers: The 3D Concert Experience,Walt Disney Studios Motion Pictures,Documentary|Music,76.0,19162740,2009-02-27,music_documentary;live_or_concert_title,/release/rl1566410241/
+Pooh's Heffalump Movie,Walt Disney Studios Motion Pictures,Family|Animation|Comedy|Fantasy,68.0,18098433,2005-02-11,runtime_outlier,/release/rl3478554113/
+The Blind,Fathom Events,Drama|Romance|Thriller,108.0,17265487,2023-09-29,event_distributor,/release/rl2123662081/
+"The Goods: Live Hard, Sell Hard",Paramount Vantage,Comedy,89.0,15122676,2009-08-14,live_or_concert_title,/release/rl3612640769/
+Glee: The 3D Concert Movie,20th Century Fox,Music|Documentary|Family,84.0,11862398,2011-08-12,music_documentary;live_or_concert_title,/release/rl1767147009/
+Dave Chappelle's Block Party,Rogue Pictures,Comedy|Music|Documentary,103.0,11718595,2006-03-03,music_documentary,/release/rl3746006529/
+Terrifier 2,Cinedigm Entertainment Group,Horror,138.0,10640105,2022-10-07,event_distributor,/release/rl585073409/
+Becoming Led Zeppelin,Sony Pictures Classics,Documentary|Music,122.0,10403353,2025-02-14,music_documentary,/release/rl1362067457/
+Live by Night,Warner Bros.,Crime|Drama|History,129.0,10378555,2017-01-13,live_or_concert_title,/release/rl660702721/
+U2 3D,National Geographic Entertainment,Music|Documentary,85.0,10363341,2008-02-22,music_documentary,/release/rl1215727105/
+Piece by Piece,Focus Features,Animation|Music|Documentary,93.0,9756635,2024-10-11,music_documentary,/release/rl508461057/
+Tupac: Resurrection,Paramount Pictures,Music|Documentary,112.0,7718961,2003-11-14,music_documentary,/release/rl729187841/
+Brittany Runs a Marathon,Amazon Studios,Comedy|Drama,104.0,7189808,2019-09-13,live_or_concert_title,/release/rl705201665/
+Justin Bieber's Believe,Open Road Films (II),Documentary|Music,92.0,6206566,2013-12-27,music_documentary,/release/rl1078232577/
+Someone Like You,Fathom Events,Romance|Drama,118.0,5937306,2024-04-05,event_distributor,/release/rl1029799937/
+I Heard the Bells,Fathom Events,History|Fantasy|Drama,110.0,5644104,2022-12-02,event_distributor,/release/rl3184820993/
+Lifemark,Fathom Events,Drama,105.0,5180537,2022-09-09,event_distributor,/release/rl1859879681/
+Moonage Daydream,Neon,Documentary|Music,135.0,4218925,2022-09-23,music_documentary,/release/rl1037533953/
+Left Behind: Rise of the Antichrist,Fathom Events,Science Fiction|Action|Thriller|Fantasy,115.0,3649422,2023-01-27,event_distributor,/release/rl3337192193/
+God's Not Dead: In God We Trust,Fathom Events,Drama,96.0,3269322,2024-09-13,event_distributor,/release/rl359956481/
+The Toxic Avenger,Iconic Events Releasing,Action|Comedy|Science Fiction,102.0,2866783,2025-08-29,event_distributor,/release/rl3695017985/
+Pokémon the Movie: I Choose You!,Fathom Events,Family|Animation|Adventure|Fantasy,98.0,2401722,2017-11-10,event_distributor,/release/rl3540157953/
+Hillsong: Let Hope Rise,Pure Flix Entertainment,Documentary|Music,103.0,2394386,2016-09-16,music_documentary,/release/rl2824439297/
+"Summer of Soul (...Or, When the Revolution Could Not be Televised)",Searchlight Pictures,Music|Documentary|History,118.0,2320649,2021-07-02,music_documentary,/release/rl1786741505/
+Average Joe,Fathom Events,Drama,100.0,2106965,2024-10-11,event_distributor,/release/rl2407038977/
+Moses,Fathom Events,Drama|Family|History,130.0,1807117,2018-09-14,event_distributor,/release/rl2198308353/
+Green and Gold,Fathom Events,Drama,95.0,1719105,2025-01-31,event_distributor,/release/rl1696104449/
+"Silent Night, Deadly Night",Iconic Events Releasing,Horror|Thriller,96.0,1495324,2025-12-12,event_distributor,/release/rl3972628481/
+Something to Stand for with Mike Rowe,Fathom Events,Documentary,96.0,1358690,2024-06-28,event_distributor,/release/rl1197899777/
+The Pilgrim's Progress,Fathom Events,Animation|Adventure,108.0,1294596,2019-04-19,event_distributor,/release/rl956859905/
+The Christmas Ring,Fathom Entertainment,Romance|Drama,103.0,1229930,2025-11-07,event_distributor,/release/rl165838849/
+Noah,Fathom Events,Family|History,130.0,1035603,2019-04-12,event_distributor,/release/rl3406398977/
+Primitive War,Fathom Entertainment,Action|Horror|War|Science Fiction,133.0,1005222,2025-08-22,event_distributor,/release/rl600735745/
+Evangelion: 3.0+1.0 Thrice Upon a Time,Fathom Events,Animation|Action|Science Fiction|Drama,155.0,810744,2022-12-09,event_distributor,/release/rl3051324161/
+Pokémon the Movie: The Power of Us,Fathom Events,Animation|Family|Adventure|Fantasy,100.0,789170,2018-11-23,event_distributor,/release/rl1829144065/
+Patterns of Evidence: Moses Controversy,Fathom Events,Documentary|History,140.0,765361,2019-03-15,event_distributor,/release/rl2248771073/
+Disciples in the Moonlight,Fathom Events,Drama|Thriller,126.0,708379,2024-07-19,event_distributor,/release/rl1315536897/
+I Am the Immaculate Conception,Fathom Events,Documentary|Drama|Fantasy,80.0,661130,2024-12-13,event_distributor,/release/rl1846312961/
+The Thorn,Fathom Events,,85.0,577004,2023-04-07,event_distributor,/release/rl3705963265/
+The Opera House,Fathom Events,Documentary,111.0,320079,2018-01-12,event_distributor,/release/rl3909518849/
+DanTDM Presents The Contest,Fathom Events,,95.0,307484,2019-11-01,event_distributor,/release/rl3188426241/
+Jimmy and Stiggs,Iconic Events Releasing,Horror|Science Fiction,79.0,111685,2025-08-15,event_distributor,/release/rl3611000833/
+Children of the Sea,Fathom Events,Animation|Fantasy|Adventure|Mystery,111.0,81237,2021-06-11,event_distributor,/release/rl2411168257/
