@@ -165,47 +165,6 @@ def fig_genre(df):
     save(fig, "07_gross_by_genre.png")
 
 
-def fig_correlation(df):
-    cols = ["log_gross_adj", "log_budget_adj", "runtime_min", "genre_count", "release_month", "is_big_six",
-            "in_collection", "is_sequel", "n_prior_films", "prior_film_log_gross", "director_n_prior",
-            "director_mean_log_gross", "actor_n_prior", "actor_mean_log_gross"]
-    corr = df[cols].corr()                       # pairwise: each pair uses the films that have both values
-    fig, ax = plt.subplots(figsize=(9, 7.5))
-    im = ax.imshow(corr.values, cmap="RdBu_r", vmin=-1, vmax=1)
-    ax.set_xticks(range(len(cols))); ax.set_yticks(range(len(cols)))
-    ax.set_xticklabels(cols, rotation=60, ha="right", fontsize=8); ax.set_yticklabels(cols, fontsize=8)
-    for i in range(len(cols)):
-        for j in range(len(cols)):
-            v = corr.values[i, j]
-            if not np.isnan(v):
-                ax.text(j, i, f"{v:.2f}", ha="center", va="center", fontsize=6.5,
-                        color="white" if abs(v) > 0.6 else "black")
-    ax.grid(False)
-    fig.colorbar(im, ax=ax, shrink=0.8, label="Pearson correlation")
-    ax.set_title("Correlations among key numeric features and the target")
-    fig.text(0.01, 0.005, "Blank = undefined: prior_film_log_gross exists only for sequels, so is_sequel and "
-             "in_collection do not vary there.", fontsize=7.5, style="italic")
-    save(fig, "08_correlation_heatmap.png")
-    return corr
-
-
-def fig_missingness(df):
-    metrics = {"no budget": 1 - df["has_budget"],
-               "no director history": (df["director_n_prior"] == 0).astype(int),
-               "no lead-actor history": (df["actor_n_prior"] == 0).astype(int),
-               "no prior franchise film in data": df["prior_film_log_gross"].isna().astype(int)}
-    t = pd.DataFrame({k: v.groupby(df["era"], observed=True).mean() for k, v in metrics.items()})
-    fig, ax = plt.subplots(figsize=(10, 4.5))
-    w = 0.2
-    for i, col in enumerate(t.columns):
-        ax.bar(np.arange(len(t)) + (i - 1.5) * w, t[col], w, label=col)
-    ax.set_xticks(range(len(t))); ax.set_xticklabels(t.index)
-    ax.set(ylabel="Share of films", title="Missing or empty values by era", ylim=(0, 1.22))
-    ax.legend(frameon=False, fontsize=8, ncol=2, loc="upper left")
-    save(fig, "09_missingness_by_era.png")
-    return t
-
-
 def fig_gross_by_era(df):
     groups = [df.loc[df["era"] == e, "log_gross_adj"] for e in ERAS]
     fig, ax = plt.subplots(figsize=(8, 4.5))
@@ -215,11 +174,11 @@ def fig_gross_by_era(df):
         patch.set_facecolor(ERA_COLORS[e]); patch.set_alpha(0.6)
     ax.set(ylabel="Domestic gross (2025 dollars)", title="The typical wide release grosses less in recent years")
     log_axis(ax)
-    save(fig, "10_gross_by_era.png")
+    save(fig, "08_gross_by_era.png")
 
 
 # ---------------------------------------------------------------- tables
-def tables(df, ratio_med, corr, miss):
+def tables(df, ratio_med):
     say("\n" + "=" * 70 + "\nDATASET OVERVIEW\n" + "=" * 70)
     say(f"films: {len(df):,} | wide-release years {df['release_year'].min()}-{df['release_year'].max()}"
         f" | duplicate release_path: {int(df['release_path'].duplicated().sum())}"
@@ -258,12 +217,22 @@ def tables(df, ratio_med, corr, miss):
                                             "actor_mean_log_gross")]
     say(df[feats].isna().mean().round(3).to_string())
     say(f"MPAA 'NR' (no rating recorded): {(df['mpaa'] == 'NR').mean():.3f}")
+    miss = pd.DataFrame({
+        "no budget": 1 - df["has_budget"],
+        "no director history": (df["director_n_prior"] == 0).astype(int),
+        "no lead-actor history": (df["actor_n_prior"] == 0).astype(int),
+        "no prior franchise film in data": df["prior_film_log_gross"].isna().astype(int)}
+    ).groupby(df["era"], observed=True).mean()
     say("\nby era (share of films):")
     say(miss.round(3).to_string())
     say("Budget gaps are real missing data. The history and franchise columns are empty by "
         "construction (no earlier film in this data), not by error.")
 
     say("\n" + "=" * 70 + "\nCORRELATION WITH LOG GROSS (pairwise)\n" + "=" * 70)
+    corr_cols = ["log_gross_adj", "log_budget_adj", "runtime_min", "genre_count", "release_month", "is_big_six",
+                 "is_sequel", "n_prior_films", "prior_film_log_gross", "director_n_prior",
+                 "director_mean_log_gross", "actor_n_prior", "actor_mean_log_gross"]
+    corr = df[corr_cols].corr()                      # pairwise: each pair uses the films that have both values
     c = corr["log_gross_adj"].drop("log_gross_adj").sort_values(key=abs, ascending=False)
     n = {k: int(df[[k, "log_gross_adj"]].dropna().shape[0]) for k in c.index}
     say(pd.DataFrame({"r": c.round(3), "n_films": pd.Series(n)}).to_string())
@@ -281,10 +250,8 @@ def main():
     fig_gross_by_month(df)
     fig_gross_by_category(df)
     fig_genre(df)
-    corr = fig_correlation(df)
-    miss = fig_missingness(df)
     fig_gross_by_era(df)
-    tables(df, ratio_med, corr, miss)
+    tables(df, ratio_med)
     (OUT.parent / "eda_summary.txt").write_text("\n".join(LINES), encoding="utf-8")
     print(f"\nwrote {OUT.parent / 'eda_summary.txt'}")
 
