@@ -1,10 +1,12 @@
 # Predicting Domestic Box Office Revenue
 
-Regression models that predict a wide-release movie's total domestic (North
-America) gross from pre-release features: budget, genre, runtime, MPAA rating,
-studio, release timing, franchise status, and director / lead actor track
-records. We compare Linear Regression (baseline), Ridge Regression, Random
-Forest, and XGBoost, and study which feature groups matter most.
+
+Regression models that predict a wide-release movie's total
+domestic (North America) gross from information available before release (budget,
+genre, runtime, MPAA rating, studio, release timing, franchise status, and director /
+lead actor track records). We build the dataset ourselves, then examine four
+algorithms by applying each one to it: Linear Regression, Ridge Regression, Random
+Forest, and XGBoost.
 
 ## Status
 
@@ -20,9 +22,10 @@ Forest, and XGBoost, and study which feature groups matter most.
 | Franchise release dates (for the sequel flag) | `src/tmdb_collections.py` | done |
 | Feature engineering (56 features, 7 groups) | `src/build_features.py` | done |
 | Exploratory data analysis | `src/eda.py` | done |
-| Linear regression and Ridge | `src/model_linear.py`, `src/model_ridge.py` | done (mid-project) |
-| Random forest and XGBoost | `src/model_random_forest.py`, `src/model_xgboost.py` | planned (full report) |
-| Model comparison table and figure | `src/compare_models.py` | done |
+| Linear regression | `src/model_linear.py` | done (mid-project) |
+| Ridge regression | `src/model_ridge.py` | done (mid-project) |
+| Random forest | `src/model_random_forest.py` | planned (final report) |
+| XGBoost | `src/model_xgboost.py` | planned (final report) |
 
 ## Setup
 
@@ -62,16 +65,17 @@ python src/build_dataset.py           # cleaned modeling table -> movies_clean.c
 python src/adjust_cpi.py              # constant-dollar columns -> movies_adjusted.csv
 python src/tmdb_collections.py        # release dates of every film in each franchise
 python src/build_features.py          # features.csv, feature_groups.csv
+python src/eda.py                     # figures and summary tables for exploration
+python src/make_diagram.py            # pipeline diagram for the report
 ```
 
-Then the models (each one is a standalone script):
+Then the four models. Each is a short, standalone script (no shared helper file):
 
 ```
 python src/model_linear.py
 python src/model_ridge.py
-python src/model_random_forest.py     # slowest: a few minutes
-python src/model_xgboost.py
-python src/compare_models.py          # merges whichever model results exist
+python src/model_random_forest.py    # about a minute or two
+python src/model_xgboost.py    # needs: python -m pip install xgboost
 ```
 
 Everything from `build_dataset.py` onward reads only the committed CSVs, so it can
@@ -96,7 +100,6 @@ Notes:
 - `tmdb_collections.py` reads `movies_clean.csv` and makes about 590 requests
   (one per franchise), cached under `data/raw/tmdb_collection/`.
 - `adjust_cpi.py` needs `data/external/CPIAUCNS.csv` (see Data sources).
-- The model scripts take a few minutes at most; the random forest is the slowest.
 
 All parsed tables are stored in `data/processed/movies.db` (SQLite):
 
@@ -181,8 +184,8 @@ budgets differ by more than 2x). The `review_*.csv` files list them.
 
 ## Features
 
-`src/build_features.py` builds 56 numeric features in seven groups (listed in
-`feature_groups.csv`, which the model scripts use for the group experiments):
+`src/build_features.py` builds 56 numeric features in seven groups. The model
+scripts read the feature list from `feature_groups.csv`.
 
 | Group | Features |
 |-------|----------|
@@ -211,48 +214,50 @@ Rules that keep the features honest:
 
 ## Modeling approach
 
-- **Target:** ln(domestic gross in 2025 dollars).
-- **Time-based split** (nothing from the future predicts the past):
-  tune on 2000-2015 and validate on 2016-2019; refit on 2000-2019; test on
-  2022-2025. The pandemic years (2020-2021) are scored separately.
-- **Two analyses:** films with a recorded budget (main, 3,600 films) and all
-  films (secondary, 3,911). Budget-missing films are mostly small releases, so
-  including them also rewards the model for recognizing "no recorded budget".
-- **Metrics:** R², RMSE and MAE on the log scale, median percentage error in
-  dollars, share of films within a factor of 2, and a 95% bootstrap interval for
-  R² over the test films.
-- **Per-model analysis:** each script also removes one feature group at a time
-  and refits, adds groups cumulatively, and measures permutation importance of
-  each group.
-- Missing values are filled with the training median for linear, Ridge and the
-  forest; XGBoost handles them natively.
+The four model scripts share one simple recipe, so they can be compared fairly:
 
-Each model script writes its results to `reports/results/` (`<model>_metrics.csv`,
-`<model>_ablation.csv`, `<model>_group_importance.csv`) and its figures to
-`reports/figures/` (predicted vs actual, ablation, and a loss or validation
-curve where one exists).
+1. **Data:** films with a recorded budget (3,600 films), all 56 features.
+2. **Target:** ln(domestic gross in 2025 dollars). In logs, an error is a
+   percentage miss, which suits grosses from $0.1M to $1B.
+3. **Split by time**, so nothing from the future predicts the past: learn from
+   films released 2000-2019, test on 2022-2025. (2020-2021, the pandemic years,
+   are left out of both.)
+4. **Choosing settings:** a model's one or two settings (Ridge's penalty, the
+   forest's tree depth, XGBoost's depth and number of rounds) are chosen by
+   learning from 2000-2015 and checking on 2016-2019, then the model is refit on
+   all of 2000-2019.
+5. **Score on the test films** with three easy numbers: R2 (1 = perfect, 0 = no
+   better than guessing the average), the typical miss as a multiple (2.0 = off by
+   a factor of 2), and the share of films predicted within a factor of 2. An
+   "always guess the average" baseline is shown for comparison.
+6. **Look inside:** coefficients for the linear models; for the tree models, how
+   much the score drops when one feature is shuffled.
+7. **Pictures** are saved to `reports/figures/basic/`: predicted vs actual
+   gross for every model, plus a tuning or loss curve (ridge's penalty curve, the
+   forest's depth and tree-count curves, XGBoost's training-vs-validation loss).
+
+Missing values are filled with the training median for linear, Ridge and the
+forest; XGBoost handles them natively.
 
 ## Results so far (mid-project)
 
-Test R² on 2022-2025 films, with 95% bootstrap intervals:
+Films with a recorded budget, scored on the 2022-2025 films (n = 505):
 
-| Model | Films with a budget (n=505) | All films (n=656) |
-|-------|-----------------------------|-------------------|
-| Mean baseline | -0.32 (-0.43, -0.23) | -0.59 (-0.74, -0.47) |
-| Linear, log budget only | 0.21 (0.11, 0.29) | 0.30 (0.21, 0.36) |
-| Linear, all features | 0.28 (0.19, 0.36) | 0.37 (0.30, 0.44) |
-| Ridge | 0.28 (0.19, 0.36) | 0.37 (0.30, 0.43) |
+| Model | R2 | Typical miss | Within 2x |
+|-------|----|--------------|-----------|
+| Always guess the average | -0.32 | 3.4x | 27% |
+| Linear regression, budget only | 0.21 | 2.3x | 42% |
+| Linear regression, all 56 features | 0.28 | 2.2x | 46% |
+| Ridge regression | 0.28 | 2.2x | 46% |
 
-- Budget carries most of the signal; adding the other features raises R² by
-  about 0.07-0.08. Studio adds the most beyond budget; franchise, timing,
-  director and lead-actor track records add little.
-- Removing the **content** group (genres, MPAA, runtime) *improves* the linear
-  models, so its 2000-2019 patterns do not carry into recent years.
-- Ridge is no better than plain linear regression (its validation curve is flat
-  until the penalty is large).
-- Every model **over-predicts** recent films: error grows from about 0.83 on the
-  training years to 0.93 on 2016-2019 validation and 1.36 on 2022-2025 test, and
-  the typical 2022-2025 film is predicted about 2x too high.
+- Budget alone carries most of the signal: a 10% bigger budget goes with about a
+  6% bigger gross. The other 55 features add about 0.07 of R2.
+- Ridge scores the same as plain linear regression. With ~3,000 films and 56
+  features there is little to shrink; its error is flat across small penalties
+  (about 0.83 on 2000-2015 films and 0.93 on the unseen 2016-2019 films).
+- The "always guess the average" baseline scores below zero because recent films
+  earn less than the 2000-2019 average: the market changed between the training
+  and test years.
 
 Random forest and XGBoost results will be added for the final report.
 
@@ -271,12 +276,15 @@ reusing this code.
 
 - One test window (2022-2025); results may differ for other periods.
 - A clear era shift: models trained on 2000-2019 over-predict recent films.
-- Roughly 23% of 2020s films have no recorded budget, and the all-films scores
-  partly reflect that missingness.
+- The model scripts report no confidence intervals, and the test set is modest
+  (505 films), so small score differences between models should not be
+  over-interpreted.
+- Films with no recorded budget (about 23% of 2020s films) are left out of the
+  modeling.
 - Director and actor histories are thin early in the data (the data starts in
   2000) and for newcomers.
 - A day-and-date-streaming flag for 2020-2021 Warner Bros. and Disney releases
-  is not yet included.
+  is not included.
 
 ## Data not included in the repo
 
@@ -292,10 +300,9 @@ engineering and modeling can be done without the raw cache or the database.
 ## Repository layout
 
 ```
-src/              pipeline, analysis and model scripts
+src/              data pipeline, features, EDA and the four model scripts
 data/raw/         cached HTML / API JSON (not committed)
 data/external/    CPIAUCNS.csv (inflation index from FRED)
 data/processed/   SQLite DB (not committed) and small CSV exports
-reports/figures/  EDA, model and diagram figures
-reports/results/  per-model metrics, ablation and importance tables
+reports/figures/  EDA and diagram figures; basic/ holds the model figures
 ```
