@@ -57,7 +57,7 @@ GROUP_PREFIXES = [("log_budget", "budget"), ("has_budget", "budget"),
                   ("release_month", "timing"), ("month_", "timing"), ("holiday_", "timing"),
                   ("thanksgiving", "timing"), ("christmas", "timing"), ("july4", "timing"),
                   ("studio_", "studio"), ("is_big_six", "studio"),
-                  ("in_collection", "franchise"), ("n_prior_films", "franchise"), ("is_sequel", "franchise"),
+                  ("n_prior_films", "franchise"), ("is_sequel", "franchise"),
                   ("n_prior_in_data", "franchise"), ("prior_film_", "franchise"), ("franchise_", "franchise"),
                   ("director_", "director"), ("actor_", "actor")]
 
@@ -140,7 +140,9 @@ def franchise_features(m, col):
     last = pr.sort_values("part_wide").groupby("tmdb_id").tail(1).set_index("tmdb_id")["part_log"]
 
     f = pd.DataFrame(index=m.index)
-    f["in_collection"] = m["collection_id"].notna().astype(int)
+    # NOTE: "belongs to a collection" is deliberately NOT a feature. A first film only joins a collection if
+    # sequels were made later, so for first films it leaks hindsight about success. is_sequel (an EARLIER
+    # film exists) is knowable before release and carries the legitimate franchise signal.
     f["n_prior_films"] = m["tmdb_id"].map(n_prior).fillna(0).astype(int)
     f["is_sequel"] = (f["n_prior_films"] >= 1).astype(int)
     f["n_prior_in_data"] = m["tmdb_id"].map(pr.groupby("tmdb_id").size()).fillna(0).astype(int)

@@ -44,7 +44,6 @@ studio_Lionsgate,studio
 studio_MGM,studio
 studio_Other,studio
 is_big_six,studio
-in_collection,franchise
 n_prior_films,franchise
 is_sequel,franchise
 n_prior_in_data,franchise
